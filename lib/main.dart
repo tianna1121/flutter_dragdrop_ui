@@ -63,24 +63,47 @@ class _HomePageState extends State<HomePage> {
               children: items.map((item) {
                 return Container(
                     margin: EdgeInsets.all(8.0),
-                    child: Icon(item.icon, color: Colors.red, size: 50.0));
+                    child: Draggable<ItemModel>(
+                        data: item,
+                        childWhenDragging: Icon(
+                          item.icon,
+                          color: Colors.grey,
+                          size: 50.0,
+                        ),
+                        feedback: Icon(
+                          item.icon,
+                          color: Colors.red,
+                          size: 50.0,
+                        ),
+                        child: Icon(item.icon, color: Colors.red, size: 50.0)));
               }).toList(),
             ),
             Spacer(),
             Column(
               children: items.map((item) {
-                return Container(
-                  color: Colors.red,
-                  height: 50.0,
-                  width: 100.0,
-                  alignment: Alignment.center,
-                  margin: EdgeInsets.all(8.0),
-                  child: Text(
-                    item.name,
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18.0),
+                return DragTarget<ItemModel>(
+                  onWillAccept: (receivedItem) => true,
+                  onAccept: (receivedItem) {
+                    if (item.value == receivedItem.value) {
+                      setState(() {
+                        items.remove(receivedItem);
+                        items2.remove(item);
+                      });
+                    }
+                  },
+                  builder: (context, acceptedItems, rejectedItems) => Container(
+                    color: Colors.red,
+                    height: 50.0,
+                    width: 100.0,
+                    alignment: Alignment.center,
+                    margin: EdgeInsets.all(8.0),
+                    child: Text(
+                      item.name,
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18.0),
+                    ),
                   ),
                 );
               }).toList(),
