@@ -96,23 +96,36 @@ class _HomePageState extends State<HomePage> {
                 Column(
                   children: items.map((item) {
                     return DragTarget<ItemModel>(
-                      onWillAccept: (receivedItem) => true,
+                      onWillAccept: (receivedItem) {
+                        setState(() {
+                          item.accepting = true;
+                        });
+                        return true;
+                      },
                       onAccept: (receivedItem) {
                         if (item.value == receivedItem.value) {
                           setState(() {
                             items.remove(receivedItem);
                             items2.remove(item);
                             score += 10;
+                            item.accepting = false;
                           });
                         } else {
                           setState(() {
                             score -= 5;
+                            item.accepting = false;
                           });
                         }
                       },
+                      onLeave: (receivedItem) {
+                        setState(() {
+                          item.accepting = false;
+                        });
+                      },
                       builder: (context, acceptedItems, rejectedItems) =>
                           Container(
-                        color: Colors.red,
+                        color:
+                            item.accepting ? Colors.red.shade300 : Colors.red,
                         height: 50.0,
                         width: 100.0,
                         alignment: Alignment.center,
@@ -141,5 +154,6 @@ class ItemModel {
   final String name;
   final String value;
   final IconData icon;
-  ItemModel({this.name, this.value, this.icon});
+  bool accepting;
+  ItemModel({this.name, this.value, this.icon, this.accepting = false});
 }
