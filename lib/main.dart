@@ -102,7 +102,7 @@ class _HomePageState extends State<HomePage> {
                     ),
                     Spacer(),
                     Column(
-                      children: items.map((item) {
+                      children: items2.map((item) {
                         return DragTarget<ItemModel>(
                           onWillAccept: (receivedItem) {
                             setState(() {
