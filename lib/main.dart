@@ -24,15 +24,18 @@ class _HomePageState extends State<HomePage> {
   List<ItemModel> items;
   List<ItemModel> items2;
   int score;
+  bool gameOver;
 
   @override
   void initState() {
     super.initState();
     initGame();
-    score = 0;
   }
 
   initGame() {
+    gameOver = false;
+    score = 0;
+
     items = [
       ItemModel(icon: FontAwesomeIcons.google, name: 'Google', value: 'google'),
       ItemModel(
@@ -53,6 +56,9 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    if (items.length == 0) {
+      gameOver = true;
+    }
     return Scaffold(
       appBar: AppBar(
         title: Text('Drag and Drop'),
@@ -71,77 +77,99 @@ class _HomePageState extends State<HomePage> {
                         fontWeight: FontWeight.bold,
                         fontSize: 30.0))
               ])),
-              Row(children: <Widget>[
-                Column(
-                  children: items.map((item) {
-                    return Container(
-                        margin: EdgeInsets.all(8.0),
-                        child: Draggable<ItemModel>(
-                            data: item,
-                            childWhenDragging: Icon(
-                              item.icon,
-                              color: Colors.grey,
-                              size: 50.0,
+              if (!gameOver)
+                Row(
+                  children: <Widget>[
+                    Column(
+                      children: items.map((item) {
+                        return Container(
+                            margin: EdgeInsets.all(8.0),
+                            child: Draggable<ItemModel>(
+                                data: item,
+                                childWhenDragging: Icon(
+                                  item.icon,
+                                  color: Colors.grey,
+                                  size: 50.0,
+                                ),
+                                feedback: Icon(
+                                  item.icon,
+                                  color: Colors.red,
+                                  size: 50.0,
+                                ),
+                                child: Icon(item.icon,
+                                    color: Colors.red, size: 50.0)));
+                      }).toList(),
+                    ),
+                    Spacer(),
+                    Column(
+                      children: items.map((item) {
+                        return DragTarget<ItemModel>(
+                          onWillAccept: (receivedItem) {
+                            setState(() {
+                              item.accepting = true;
+                            });
+                            return true;
+                          },
+                          onAccept: (receivedItem) {
+                            if (item.value == receivedItem.value) {
+                              setState(() {
+                                items.remove(receivedItem);
+                                items2.remove(item);
+                                score += 10;
+                                item.accepting = false;
+                              });
+                            } else {
+                              setState(() {
+                                score -= 5;
+                                item.accepting = false;
+                              });
+                            }
+                          },
+                          onLeave: (receivedItem) {
+                            setState(() {
+                              item.accepting = false;
+                            });
+                          },
+                          builder: (context, acceptedItems, rejectedItems) =>
+                              Container(
+                            color: item.accepting
+                                ? Colors.red.shade300
+                                : Colors.red,
+                            height: 50.0,
+                            width: 100.0,
+                            alignment: Alignment.center,
+                            margin: EdgeInsets.all(8.0),
+                            child: Text(
+                              item.name,
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18.0),
                             ),
-                            feedback: Icon(
-                              item.icon,
-                              color: Colors.red,
-                              size: 50.0,
-                            ),
-                            child: Icon(item.icon,
-                                color: Colors.red, size: 50.0)));
-                  }).toList(),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ],
                 ),
-                Spacer(),
-                Column(
-                  children: items.map((item) {
-                    return DragTarget<ItemModel>(
-                      onWillAccept: (receivedItem) {
-                        setState(() {
-                          item.accepting = true;
-                        });
-                        return true;
-                      },
-                      onAccept: (receivedItem) {
-                        if (item.value == receivedItem.value) {
-                          setState(() {
-                            items.remove(receivedItem);
-                            items2.remove(item);
-                            score += 10;
-                            item.accepting = false;
-                          });
-                        } else {
-                          setState(() {
-                            score -= 5;
-                            item.accepting = false;
-                          });
-                        }
-                      },
-                      onLeave: (receivedItem) {
-                        setState(() {
-                          item.accepting = false;
-                        });
-                      },
-                      builder: (context, acceptedItems, rejectedItems) =>
-                          Container(
-                        color:
-                            item.accepting ? Colors.red.shade300 : Colors.red,
-                        height: 50.0,
-                        width: 100.0,
-                        alignment: Alignment.center,
-                        margin: EdgeInsets.all(8.0),
-                        child: Text(
-                          item.name,
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18.0),
-                        ),
-                      ),
-                    );
-                  }).toList(),
+              if (gameOver)
+                Text(
+                  'Game Over',
+                  style: TextStyle(
+                      color: Colors.red,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 24.0),
                 ),
-              ]),
+              if (gameOver)
+                RaisedButton(
+                  textColor: Colors.white,
+                  color: Colors.pink,
+                  child: Text('New Game'),
+                  onPressed: () {
+                    initGame();
+                    setState(() {});
+                  },
+                )
             ],
           ),
         ),
